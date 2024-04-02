@@ -22,6 +22,14 @@ class CDDP:
 		self.reg_factor = 0.001
 		self.reg_factor_u = 0.001
 		self.active_set_tol = 0.01
+	
+	def reset_trajectory_size(self, new_initial_state):
+		self.initial_state = np.copy(new_initial_state)
+		self.x_trajectories[:,1:self.horizon] = self.x_trajectories[:, 2:self.horizon+1]
+		self.u_trajectories[:,:self.horizon-1] = self.u_trajectories[:, 1:self.horizon]
+		self.horizon = self.horizon - 1
+		#print(self.horizon)
+		
 
 	def set_initial_trajectories(self, x_trajectories, u_trajectories):
 		self.x_trajectories = np.copy(x_trajectories)
@@ -40,6 +48,9 @@ class CDDP:
 			x_new_trajectories = np.zeros((self.system.state_size, self.horizon + 1))
 			u_new_trajectories = np.zeros((self.system.control_size, self.horizon))
 			x = np.copy(self.initial_state)
+			#print(x)
+			#print(self.x_trajectories[:, 0])
+			#print(self.x_trajectories[:, 1])
 			x_new_trajectories[:, 0] = np.copy(x)
 			for i in range(self.horizon):
 				delta_x = x - self.x_trajectories[:, i]
@@ -75,7 +86,7 @@ class CDDP:
 						x_temp = self.system.transition(x, self.u_trajectories[:, i])
 						D = constraint.evaluate_constraint(x_temp)
 						#print("constraint eval", D, i, x)
-						C = constraint.evaluate_constraint_J(x_temp)
+						C = constraint.evaluate_constraint_J(x_temp,self.u_trajectories[:, i])
 						#print(C.shape, f_u.shape)
 						C = C.dot(f_u)
 						constraint_A[constraint_index, :] = np.copy(C)
@@ -88,6 +99,9 @@ class CDDP:
 				prob.setup(P, q, constraint_A, lb, ub, alpha=1.0, verbose=False)
 				res = prob.solve()
 				if res.info.status != 'solved':
+					#print(i)
+					
+					#print(x_new_trajectories[:, i])
 					feasible = False
 					#print("infeasible, reduce trust region")
 					trust_region_scale *= 0.9
@@ -149,7 +163,7 @@ class CDDP:
 					D_constraint = self.constraints[j].evaluate_constraint(self.x_trajectories[:, i+1])
 					#print("constraint", D_constraint, i)
 					if abs(D_constraint) <= self.active_set_tol:
-						C_constraint = self.constraints[j].evaluate_constraint_J(self.x_trajectories[:, i+1])
+						C_constraint = self.constraints[j].evaluate_constraint_J(self.x_trajectories[:, i+1],self.u_trajectories[:, i] )
 						C[index, :] = C_constraint.dot(f_u)
 						#print(C_constraint.dot(f_u))
 						D[index, :] = -C_constraint.dot(f_x)
@@ -216,18 +230,26 @@ if __name__ == '__main__':
 	Q_f[2, 2] = 50
 	Q_f[3, 3] = 10
 	system.set_final_cost(Q_f)
-	system.set_goal(np.array([2, 4, np.pi/2, 0]))
+	system.set_goal(np.array([2, 4, 0, 0]))
 
-	solver = CDDP(system, np.zeros(4), horizon=100)
+	solver = CDDP(system, np.zeros(4), horizon=300)
 	constraint = CircleConstraintForCar(np.ones(2), 0.5, system)
 	constraint2 = CircleConstraintForCar(np.array([2, 2]), 1.0, system)
+	#constraint3 = CircleConstraintForCar(np.array([1, 2]), 1.0, system)   # impossible trajectories
+	constraint3 = CircleConstraintForCar(np.array([0, 2]), 0.4, system) 
 	for i in range(10):
 		solver.backward_pass()
 		solver.forward_pass()
-	solver.add_constraint(constraint)
-	solver.add_constraint(constraint2)
+	solver.system.draw_trajectories(solver.x_trajectories)
+	#solver.add_constraint(constraint)
+	#solver.add_constraint(constraint2)
+	#solver.add_constraint(constraint3)  
 	system.set_goal(np.array([3, 3, np.pi/2, 0]))
 	for i in range(20):
+		solver.backward_pass()
+		solver.forward_pass()
+
+	for i in range(10):
 		solver.backward_pass()
 		solver.forward_pass()
 	solver.system.draw_trajectories(solver.x_trajectories)
