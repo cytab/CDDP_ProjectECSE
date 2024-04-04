@@ -58,3 +58,15 @@ source devel/setup.bash
 '''
 roslaunch turtlebot3_gazebo turtlebot3_empty_world.launch 
 '''
+
+'''
+roslaunch turtlebot3_gazebo turtlebot3_gazebo_rviz.launch
+'''
+'''
+python mpc_sim
+'''
+
+If you want to variate the initial position of the robot specify this command to the gazebo command :
+'''
+roslaunch turtlebot3_gazebo turtlebot3_world.launch x_pos:=x y_pos:=y z_pos=z
+'''
