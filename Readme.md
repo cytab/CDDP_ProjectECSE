@@ -125,4 +125,4 @@ For this library python 3.10 is mandatory otherwise you would need to comment so
         ```
 # What to expect when running 
 1. Environment layout:
-![Test Image 7](https://github.com/cytab/CDDP_ProjectECSE/tree/safe_Cddp_MCGILL_project)
+![Test Image 7](https://github.com/cytab/CDDP_ProjectECSE/blob/safe_Cddp_MCGILL_project/images/default_gzclient_camera(1)-2024-04-29T02_38_01.022715%20(copy).jpg) 

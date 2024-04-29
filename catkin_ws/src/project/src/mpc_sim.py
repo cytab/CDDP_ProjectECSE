@@ -180,10 +180,7 @@ move = Twist()
 global solver
 solver = CDDP(system, np.zeros(3), horizon=200)
 
-#plt.figure()
-#plt.plot(range(len(solver.u_trajectories[0,:])), solver.u_trajectories[0,:], label="vitesse ang")
-#plt.plot(range(len(solver.u_trajectories[0,:])), solver.u_trajectories[1,:], label="vitesse lin")
-#plt.show()
+
 try:
     
     constraint = CircleConstraintForCar(np.ones(2), 0.5, system)
@@ -230,8 +227,6 @@ try:
         waypoint = optimal_path_pub(solver)
         opti_path_pub.publish(waypoint)
         
-        #solver.system.draw_trajectories(solver.x_trajectories)
-       # print('we good')
         if dist(s=state) <= 0.08 :
             move.linear.x = 0
             move.linear.y = 0
@@ -242,14 +237,12 @@ try:
             plt.plot(odom_Trajectories_x, odom_Trajectories_y, color='green')
             plt.show()
         else:
-            #print(move)
             #command_arrow_pub(pub=command_arrow_marker, state=state, solver=solver)
             initial_velocity = command_to_vxy(solver=solver, state=state)
             modulated_velocity = fast_avoider.avoid(initial_velocity, position=np.array([state[0], state[1]]))
-            modulated_command = vxy_to_command(modulated=modulated_velocity)  
+            modulated_command = vxy_to_command(modulated=modulated_velocity)
+            
             # non modulated velocity
-            #print(solver.u_trajectories[:,0])
-            #print(modulated_command)
             #move.linear.x = solver.u_trajectories[0,0]
             #move.angular.z = solver.u_trajectories[1,0]
             
