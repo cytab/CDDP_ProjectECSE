@@ -199,6 +199,7 @@ try:
     for i in range(50):
             solver.backward_pass()
             solver.forward_pass()
+            
     plt.plot(solver.x_trajectories[0,:], solver.x_trajectories[1,:], color='red')     
     plt.show()  
     
