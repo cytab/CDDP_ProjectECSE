@@ -16,7 +16,7 @@ You need to open a new terminal for that path change to take place (to be able t
 
 2. Create a conda environment that will contain python 3:
 ```
-conda create -n safe_cddp python=3.9
+conda create -n safe_cddp python=3.10
 ```
 3. Activate python environment
 
@@ -28,57 +28,53 @@ conda activate safe_cddp
 
 Use this to install [ros noetic](https://wiki.ros.org/noetic/Installation/Ubuntu)
 
+## Install this repository with git clone 
+
 ## Now let's run some code
 
-'''
+```
 cd catkin_ws
-'''
+```
 
 
-'''
+```
 catkin_make -DPYTHON_EXECUTABLE=/usr/bin/python3
-'''
+```
 
 
-'''
-cd .. 
-'''
-
-
-'''
+```
 source devel/setup.bash 
-'''
+```
 
-'''
+```
 export TURTLEBOT3_MODEL=burger
-'''
+```
 
-'''
+```
 source devel/setup.bash 
-'''
-'''
+```
+```
 roslaunch turtlebot3_gazebo turtlebot3_empty_world.launch 
-'''
+```
 
-'''
+```
 roslaunch turtlebot3_gazebo turtlebot3_gazebo_rviz.launch
-'''
-'''
+```
+```
 python mpc_sim
-'''
+```
 
 If you want to variate the initial position of the robot specify this command to the gazebo command :
-'''
+```
 roslaunch turtlebot3_gazebo turtlebot3_world.launch x_pos:=x y_pos:=y z_pos=z
-'''
+```
 
 Dive into src file created by doing cd src/ and create a file names project 
-'''
-mkdir project | cd project | mkdir src | cd src
-'''
+```
+ cd project | cd src
+```
 
-Install the source code of this this 
 
 Install the fast obstacles avoidance library by following the instruction [here](https://github.com/hubernikus/fast_obstacle_avoidance/tree/main)
-
+For this library python 3.10 is mandatory otherwise you would need to comment some poart of their base code but it is not difficult, 
 
