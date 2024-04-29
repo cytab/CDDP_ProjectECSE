@@ -4,6 +4,7 @@ These installation instructions are created for Ubuntu 20.04. If you are using a
 
 
 ## Ubuntu 20.04
+## Python 3.9 or 3.10
 
 ## Install Python Environment
 
@@ -15,7 +16,7 @@ You need to open a new terminal for that path change to take place (to be able t
 
 2. Create a conda environment that will contain python 3:
 ```
-conda create -n safe_cddp python=3.7
+conda create -n safe_cddp python=3.9
 ```
 3. Activate python environment
 
@@ -70,3 +71,14 @@ If you want to variate the initial position of the robot specify this command to
 '''
 roslaunch turtlebot3_gazebo turtlebot3_world.launch x_pos:=x y_pos:=y z_pos=z
 '''
+
+Dive into src file created by doing cd src/ and create a file names project 
+'''
+mkdir project | cd project | mkdir src | cd src
+'''
+
+Install the source code of this this 
+
+Install the fast obstacles avoidance library by following the instruction [here](https://github.com/hubernikus/fast_obstacle_avoidance/tree/main)
+
+

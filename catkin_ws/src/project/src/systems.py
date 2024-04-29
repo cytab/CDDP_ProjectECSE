@@ -61,7 +61,7 @@ class Car(DynamicalSystem):
 	def __init__(self):
 		super().__init__(3, 2)
 		self.dt = 0.16
-		self.control_bound = np.array([0.5, 2.84])
+		self.control_bound = np.array([0.9, 2.84])
 		self.goal = np.zeros(3)
 	
 	def transition(self, x, u):

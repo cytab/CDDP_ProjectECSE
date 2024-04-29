@@ -19,6 +19,7 @@ import threading
 from fast_obstacle_avoidance.utils import laserscan_to_numpy
 #from fast_obstacle_avoidance.laserscan_utils import reset_laserscan
 from fast_obstacle_avoidance.obstacle_avoider import FastLidarAvoider
+from fast_obstacle_avoidance.obstacle_avoider import SampledClusterAvoider
 
 
 global path_pub
@@ -28,7 +29,10 @@ global command_marker
 global fast_avoider
 path = Path()
 optipath = Path()
-
+All_TRajectories = []
+fistr_trajectory = []
+odom_Trajectories_x = []
+odom_Trajectories_y = [] 
 command_marker = Marker()
 command_marker.header.frame_id = 'odom'
 command_marker.type = Marker.ARROW
@@ -77,13 +81,15 @@ def callback_odom(odom):
     xr = xr #- 0.1*v*sin(raw)
     yr = yr #- 0.1*v*cos(raw)
     state = np.array([xr, yr, raw])
+    #fast_avoider.update_reference_direction()
     path_publisher(path_pub ,data=odom)
     command_arrow_pub(pub=command_arrow_marker, state=state, solver=solver) 
     
 def callback_laser(msg):
     #print(len(msg.ranges))
     dataPoints = laserscan_to_numpy(msg=msg)
-    fast_avoider.update_laserscan(dataPoints)
+    fast_avoider.update_laserscan(dataPoints, in_robot_frame=False)
+    #fast_avoider.update_reference_direction(datapoints=dataPoints, in_robot_frame=False)
     
     
 def path_publisher(pub, data):
@@ -92,6 +98,8 @@ def path_publisher(pub, data):
     pose = PoseStamped()
     pose.header = data.header
     pose.pose = data.pose.pose
+    odom_Trajectories_x.append(data.pose.pose.position.x)
+    odom_Trajectories_y.append(data.pose.pose.position.y)
     path.poses.append(pose)
     pub.publish(path)
 
@@ -100,7 +108,7 @@ def optimal_path_pub(data):
     optiPath.header.seq = 0
     optiPath.header.stamp = rospy.get_rostime()
     optiPath.header.frame_id = "odom"
-
+    All_TRajectories.append(solver)
     for i in range(0, data.x_trajectories.shape[1]-1, 5):
         ps = PoseStamped()
         ps.header.stamp = rospy.get_rostime()
@@ -145,6 +153,16 @@ def command_pose_pub(pub, state, solver):
     ps.pose.orientation.w = quat[3]
 
     pub.publish(ps)
+    
+def command_to_vxy(solver, state):
+    theta = solver.system.dt*solver.u_trajectories[1,0] #+ state[2]
+    initial_velocity = np.array([(solver.u_trajectories[0,0]*cos(theta)), (solver.u_trajectories[0,0]*sin(theta))])
+    return initial_velocity
+
+def vxy_to_command(modulated):
+    theta = atan2(modulated[1], modulated[0])
+    v = sqrt(modulated[0]**2 + modulated[1]**2)
+    return np.array([v, theta])
 
 state = np.array([0.0, 0.0, 0.0])
 system = Car()
@@ -160,7 +178,7 @@ system.set_goal(np.array([2, 4, np.pi/2]))
 global move 
 move = Twist()
 global solver
-solver = CDDP(system, np.zeros(3), horizon=300)
+solver = CDDP(system, np.zeros(3), horizon=200)
 
 #plt.figure()
 #plt.plot(range(len(solver.u_trajectories[0,:])), solver.u_trajectories[0,:], label="vitesse ang")
@@ -169,8 +187,8 @@ solver = CDDP(system, np.zeros(3), horizon=300)
 try:
     
     constraint = CircleConstraintForCar(np.ones(2), 0.5, system)
-    constraint2 = CircleConstraintForCar(np.array([2, 2]), 0.85, system)
-    for i in range(20):
+    constraint2 = CircleConstraintForCar(np.array([2, 2]), 0.8, system)
+    for i in range(40):
         solver.backward_pass()
         solver.forward_pass()
     solver.add_constraint(constraint)
@@ -178,10 +196,11 @@ try:
     solver.system.draw_trajectories(solver.x_trajectories)
     
     system.set_goal(np.array([3, 3, np.pi/2]))
-    for i in range(30):
+    for i in range(50):
             solver.backward_pass()
             solver.forward_pass()
-            
+    plt.plot(solver.x_trajectories[0,:], solver.x_trajectories[1,:], color='red')     
+    plt.show()  
     
     # node initialization
     rospy.init_node('control_node')
@@ -199,7 +218,7 @@ try:
     opti_path_pub.publish(waypoint)
     
     # avoider class
-    fast_avoider = FastLidarAvoider(evaluate_normal=True, control_radius=0.22,weight_max_norm=1e5,weight_factor=1,evaluate_velocity_weight=False,weight_power=2.0,)
+    fast_avoider = FastLidarAvoider(control_radius=0.18,weight_max_norm=1e5,weight_factor=0.035*0.0174,weight_power=8,)
     print('Ros loop started :')
     
     while not rospy.is_shutdown():
@@ -212,20 +231,31 @@ try:
         
         #solver.system.draw_trajectories(solver.x_trajectories)
        # print('we good')
-        if dist(s=state) <= 0.01 :
+        if dist(s=state) <= 0.08 :
             move.linear.x = 0
             move.linear.y = 0
             move.linear.z = 0
             move.angular.z = 0
             pub.publish(move)
+            plt.plot(All_TRajectories[0].x_trajectories[0,:], All_TRajectories[0].x_trajectories[1,:], color='red')
+            plt.plot(odom_Trajectories_x, odom_Trajectories_y, color='green')
+            plt.show()
         else:
             #print(move)
             #command_arrow_pub(pub=command_arrow_marker, state=state, solver=solver)
-            initial_velocity = np.array([(solver.u_trajectories[0,0]*cos(solver.u_trajectories[1,0])), (solver.u_trajectories[0,0]*sin(solver.u_trajectories[1,0]))])
+            initial_velocity = command_to_vxy(solver=solver, state=state)
             modulated_velocity = fast_avoider.avoid(initial_velocity, position=np.array([state[0], state[1]]))
-            print(initial_velocity-modulated_velocity)     
-            move.linear.x = solver.u_trajectories[0,0]
-            move.angular.z = solver.u_trajectories[1,0]
+            modulated_command = vxy_to_command(modulated=modulated_velocity)  
+            # non modulated velocity
+            #print(solver.u_trajectories[:,0])
+            #print(modulated_command)
+            #move.linear.x = solver.u_trajectories[0,0]
+            #move.angular.z = solver.u_trajectories[1,0]
+            
+            # modulated velocity
+            move.linear.x = modulated_command[0]
+            move.angular.z = modulated_command[1]
+            print(modulated_command[0])
             pub.publish(move)
         rate.sleep()
     
