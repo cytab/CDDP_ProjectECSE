@@ -28,7 +28,7 @@ conda activate safe_cddp
 
 ## Install ROS Noetic 
 
-Use this to install [ros noetic](https://wiki.ros.org/noetic/Installation/Ubuntu)
+4. Use this to install [ros noetic](https://wiki.ros.org/noetic/Installation/Ubuntu)
 
 ## Install this repository with git clone 
 
@@ -44,9 +44,6 @@ catkin_make -DPYTHON_EXECUTABLE=/usr/bin/python3
 ```
 
 
-```
-source devel/setup.bash 
-```
 
 ```
 export TURTLEBOT3_MODEL=burger
@@ -55,6 +52,7 @@ export TURTLEBOT3_MODEL=burger
 ```
 source devel/setup.bash 
 ```
+5. The following 2 command must work ! (If not working terminate the terminal and redo the previous 2 commands in a new terminal)
 ```
 roslaunch turtlebot3_gazebo turtlebot3_empty_world.launch 
 ```
@@ -62,16 +60,14 @@ roslaunch turtlebot3_gazebo turtlebot3_empty_world.launch
 ```
 roslaunch turtlebot3_gazebo turtlebot3_gazebo_rviz.launch
 ```
-```
-python mpc_sim
-```
 
-If you want to variate the initial position of the robot specify this command to the gazebo command :
+
+6. (optional) If you want to variate the initial position of the robot specify this command to the gazebo command :
 ```
 roslaunch turtlebot3_gazebo turtlebot3_world.launch x_pos:=x y_pos:=y z_pos=z
 ```
 
-Before going forward you have to make some changes to the turtlebot package in order to facilitate the simulation. Go into the file catkin_ws/src/turtlebot3_simulations/turtlebot3_gazebo/launch/, open the file turtlebot3_empty_world.launch and change the whole file to : 
+7. Before going forward you have to make some changes to the turtlebot package in order to facilitate the simulation. Go into the file catkin_ws/src/turtlebot3_simulations/turtlebot3_gazebo/launch/, open the file turtlebot3_empty_world.launch and change the whole file to : 
 ```
 <launch>
   <arg name="model" default="$(env TURTLEBOT3_MODEL)" doc="model type [burger, waffle, waffle_pi]"/>
@@ -100,19 +96,33 @@ Before going forward you have to make some changes to the turtlebot package in o
 
 ```
 
-Now one problem will arisem, you can remark in the above text, you need to have the turtlebot3_gazebo_project.rviz file in the right file. Change the place of the file to the empacement turtlebot3_gazebo/rviz/
+8. Now one problem will arise, you can remark in the above text, you need to have the turtlebot3_gazebo_project.rviz file in the right file. Change the place of the file to the empacement turtlebot3_gazebo/rviz/
+
 ```
 1- Go into the project\src folder
 2- move the file turtlebot3_gazebo_project.rviz to catkin_ws/src/turtlebot3_simulations/turtlebot3_gazebo/rviz/ : mv -i turtlebot3_gazebo_project.rviz  ./../../turtlebot3_simulations/turtlebot3_gazebo/rviz/
 ```
 
 
-Dive into src file created by doing cd src/ and create a file names project 
+9. Dive into src file created by doing cd src/ and create a file names project 
 ```
  cd project | cd src
 ```
 
-
-Install the fast obstacles avoidance library by following the instruction [here](https://github.com/hubernikus/fast_obstacle_avoidance/tree/main)
+10. Install the fast obstacles avoidance library by following the instruction [here](https://github.com/hubernikus/fast_obstacle_avoidance/tree/main)
 For this library python 3.10 is mandatory otherwise you would need to comment some poart of their base code but it is not difficult, 
 
+
+11. To run the project 2 essential command must be ran:
+
+    1 The first command serve to initiate gazebo with the right environment (please run this command from the folder catkin_ws):
+        ```
+        roslaunch turtlebot3_gazebo turtlebot3_empty_world.launch 
+        ```
+    2 This command initiate the mpc algorithm based on CDDP and modulation :
+        ```
+        python mpc_sim.py 
+        ```
+# What to expect when running 
+1. Environment layout:
+![Test Image 7](https://github.com/cytab/CDDP_ProjectECSE/tree/safe_Cddp_MCGILL_project)
