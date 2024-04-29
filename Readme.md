@@ -119,10 +119,13 @@ For this library python 3.10 is mandatory otherwise you would need to comment so
         ```
         roslaunch turtlebot3_gazebo turtlebot3_empty_world.launch 
         ```
-    2 This command initiate the mpc algorithm based on CDDP and modulation :
+    2 This command initiate the mpc algorithm based on CDDP and modulation (don't forget to make the file executable if not done with chmod +x mpc_sim.py):
         ```
         python mpc_sim.py 
         ```
 # What to expect when running 
 1. Environment layout:
-![Test Image 7](https://github.com/cytab/CDDP_ProjectECSE/blob/safe_Cddp_MCGILL_project/images/default_gzclient_camera(1)-2024-04-29T02_38_01.022715%20(copy).jpg) 
+![Env](https://github.com/cytab/CDDP_ProjectECSE/blob/safe_Cddp_MCGILL_project/images/default_gzclient_camera(1)-2024-04-29T02_38_01.022715%20(copy).jpg) 
+
+2. Running the mpc python file 
+![MPC](https://github.com/cytab/CDDP_ProjectECSE/blob/safe_Cddp_MCGILL_project/images/commandsim.png) 
