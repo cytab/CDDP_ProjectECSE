@@ -31,7 +31,10 @@ conda activate safe_cddp
 4. Use this to install [ros noetic](https://wiki.ros.org/noetic/Installation/Ubuntu)
 
 ## Install this repository with git clone 
-
+```
+git clone https://github.com/cytab/CDDP_ProjectECSE.git
+```
+!!!! Important switch to the branch safe_Cddp_MCGILL_project
 ## Now let's run some code
 
 ```
